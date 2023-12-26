@@ -103,7 +103,7 @@
     },
     "78": {
         "inputs": {
-            "blend_percentage": 0.5,
+            "blend_percentage": 0.2,
             "image_a": [
                 "79",
                 0
