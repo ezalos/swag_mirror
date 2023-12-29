@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Webcam Image Processor</title>
+</head>
+
+<body>
+	<video id="webcam" autoplay></video>
+	<img id="result" style="display: none; width: 100%;">
+	<canvas id="canvas" style="display: none;"></canvas>
+
+	<script>
+		const video = document.getElementById('webcam');
+		const canvas = document.getElementById('canvas');
+		const resultImage = document.getElementById('result');
+
+		// Backend server configuration
+		const serverIP = '78.202.206.149'; // Replace with your server's IP
+		const serverPort = '1111';        // Replace with your server's Port
+		const serverEndpoint = `http://${serverIP}:${serverPort}/process`;
+
+		// Access the webcam
+		navigator.mediaDevices.getUserMedia({ video: true })
+			.then(stream => {
+				video.srcObject = stream;
+				startCapture();
+			})
+			.catch(err => {
+				console.error("Error accessing webcam", err);
+			});
+
+		function captureAndSendImage() {
+			const context = canvas.getContext('2d');
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+			context.drawImage(video, 0, 0);
+			const imageData = canvas.toDataURL('image/png');
+
+			fetch(serverEndpoint, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ image: imageData })
+			})
+				.then(response => response.json())
+				.then(data => {
+					resultImage.src = data.image;
+					resultImage.style.display = 'block';
+				})
+				.catch(err => console.error('Error processing image:', err));
+		}
+
+		function startCapture() {
+			setInterval(captureAndSendImage, 10000); // Adjust the interval as needed
+		}
+	</script>
+</body>
+
+</html>

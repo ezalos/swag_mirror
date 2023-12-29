@@ -3,3 +3,5 @@ numpy
 websockets
 fire
 pillow
+# https://github.com/facebookresearch/dinov2 [extras]  --extra-index-url https://download.pytorch.org/whl/cu117  --extra-index-url https://pypi.nvidia.com
+flask-cors

@@ -1,3 +1,4 @@
+import requests
 import cv2
 import queue
 import threading
@@ -34,14 +35,12 @@ class VideoCapture:
         return self.q.get()
 
 
-OPENED_CAM = None
+vid = VideoCapture(0)
 
 
 def get_webcam_img(is_live=True) -> str:
-    if not OPENED_CAM:
-        OPENED_CAM = VideoCapture(0)
     # while is_live:
-    frame = OPENED_CAM.read()
+    frame = vid.read()
     return frame
     # vid.release()
 
@@ -62,43 +61,28 @@ def convert_frame_to_base64(frame):
     return jpg_as_text
 
 
-def convert_base64_to_frame(base64_string):
-    # Decode the base64 string
-    img_data = base64.b64decode(base64_string)
+if __name__ == "__main__":
+    
+	# URL of the Flask server
+	url = 'http://localhost:5000/process'  # Change the URL if needed
+     
+	encoded_string = convert_frame_to_base64(get_webcam_img())
+	# Prepare the JSON payload
+	payload = {
+		'image': f'data:image/png;base64,{encoded_string}'
+	}
 
-    # Convert to a numpy array
-    nparr = np.frombuffer(img_data, np.uint8)
+	# Send POST request to the Flask server
+	response = requests.post(url, json=payload)
 
-    # Decode image from the numpy array
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    if frame is None:
-        raise ValueError("Could not decode image from base64 string")
-
-    return frame
-
-
-def pillow_to_opencv(pillow_image):
-    """
-    Convert a Pillow Image to an OpenCV Image.
-    :param pillow_image: Image in Pillow format.
-    :return: Image in OpenCV format (BGR).
-    """
-    # Convert to RGB and then to a numpy array.
-    opencv_image = np.array(pillow_image.convert("RGB"))
-    # Convert RGB to BGR.
-    opencv_image = opencv_image[:, :, ::-1].copy()
-    return opencv_image
-
-
-def opencv_to_pillow(opencv_image):
-    """
-    Convert an OpenCV Image to a Pillow Image.
-    :param opencv_image: Image in OpenCV format (BGR).
-    :return: Image in Pillow format.
-    """
-    # Convert BGR to RGB.
-    pillow_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
-    # Convert to a Pillow Image.
-    pillow_image = Image.fromarray(pillow_image)
-    return pillow_image
+	# Process the response
+	if response.status_code == 200:
+		# Decode the received image from base64
+		received_data = response.json()['image']
+		received_data = received_data.split(',')[1]  # Remove the "data:image/png;base64," part
+		img_data = base64.b64decode(received_data)
+		with open('received_image.png', 'wb') as file:
+			file.write(img_data)
+		print("Image received and saved as 'received_image.png'")
+	else:
+		print("Failed to receive response from server")
