@@ -90,7 +90,7 @@
 		navigator.mediaDevices.getUserMedia({ video: true })
 			.then(stream => {
 				video.srcObject = stream;
-				startCapture();
+				captureAndSendImage(); // Start the cycle
 			})
 			.catch(err => {
 				console.error("Error accessing webcam", err);
@@ -112,18 +112,26 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ image: imageData })
 			})
-				.then(response => response.json())
+				.then(response => {
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					return response.json();
+				})
 				.then(data => {
 					resultImage.src = data.image;
 					resultImage.style.display = 'block';
+					// Call the function again to take a new picture and send it
+					captureAndSendImage();
 				})
-				.catch(err => console.error('Error processing image:', err));
-		}
-
-		function startCapture() {
-			setInterval(captureAndSendImage, 10000); // Adjust the interval as needed
+				.catch(err => {
+					console.error('Error processing image:', err);
+					// Optionally retry after a delay
+					setTimeout(captureAndSendImage, 1000);
+				});
 		}
 	</script>
+
 </body>
 
 </html>
