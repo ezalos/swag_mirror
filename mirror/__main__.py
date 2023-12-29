@@ -149,6 +149,8 @@ from flask_cors import CORS  # Import CORS
 app = Flask(__name__)
 
 CORS(app)  # Enable CORS for all routes
+from datetime import datetime
+from pathlib import Path
 
 
 @app.route("/process", methods=["POST"])
@@ -159,6 +161,14 @@ def process_image():
     # Convert base64 to PIL Image
     image_data = image_data.split(",")[1]  # Remove the "data:image/png;base64," part
     image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+
+    str_date = datetime.today().strftime("%Y-%m-%d")
+    str_datetime = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+    img_path_in = Path(f"./output/webcam/{str_date}/{str_datetime}_in.png")
+    img_path_out = Path(f"./output/webcam/{str_date}/{str_datetime}_out.png")
+    img_path_in.parent.mkdir(parents=True, exist_ok=True)
+    image.save(img_path_in)
+
     width, height = image.size
     print(f"IN IMG: {width, height = }")
 
@@ -172,6 +182,7 @@ def process_image():
     # Convert PIL Image back to base64
     buffered = io.BytesIO()
     pil_img.save(buffered, format="PNG")
+    pil_img.save(img_path_out)
     img_str = base64.b64encode(buffered.getvalue()).decode()
 
     return jsonify(image=f"data:image/png;base64,{img_str}")

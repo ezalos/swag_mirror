@@ -68,22 +68,27 @@
 <body>
 	<div id="leftPanel">
 		<video id="webcam" autoplay></video>
-		<img id="lastCaptured" style="display: none;">
+		<img id="previousCaptured" style="max-width: 100%; max-height: 22vh; display: none;">
+		<!-- New element for the previous image -->
+		<img id="lastCaptured" style="max-width: 100%; max-height: 22vh; display: none;">
 	</div>
 	<div id="rightPanel">
-		<img id="result" style="display: none;">
+		<img id="result" style="max-height: 90vh; display: none;">
 	</div>
-	<canvas id="canvas"></canvas>
+	<canvas id="canvas" style="display: none;"></canvas>
 
 	<script>
 		const video = document.getElementById('webcam');
 		const canvas = document.getElementById('canvas');
 		const resultImage = document.getElementById('result');
 		const lastCapturedImage = document.getElementById('lastCaptured');
+		const previousCapturedImage = document.getElementById('previousCaptured'); // New variable for the previous image
+
+		let lastImageDataUrl = ''; // Store the last image data URL
 
 		// Backend server configuration
 		const serverIP = '78.202.206.149'; // Replace with your server's IP
-		const serverPort = '1111';         // Replace with your server's Port
+		const serverPort = '1111'; // Replace with your server's Port
 		const serverEndpoint = `http://${serverIP}:${serverPort}/process`;
 
 		// Access the webcam
@@ -103,7 +108,16 @@
 			context.drawImage(video, 0, 0);
 			const imageData = canvas.toDataURL('image/png');
 
-			// Update the last captured image
+			// Update the previous image if we have one
+			if (lastImageDataUrl) {
+				previousCapturedImage.src = lastImageDataUrl;
+				previousCapturedImage.style.display = 'block';
+			}
+
+			// Update the last image data URL
+			lastImageDataUrl = imageData;
+
+			// Show the last captured image
 			lastCapturedImage.src = imageData;
 			lastCapturedImage.style.display = 'block';
 
@@ -121,8 +135,7 @@
 				.then(data => {
 					resultImage.src = data.image;
 					resultImage.style.display = 'block';
-					// Call the function again to take a new picture and send it
-					captureAndSendImage();
+					captureAndSendImage(); // Take a new picture and send it
 				})
 				.catch(err => {
 					console.error('Error processing image:', err);
@@ -131,7 +144,6 @@
 				});
 		}
 	</script>
-
 </body>
 
 </html>

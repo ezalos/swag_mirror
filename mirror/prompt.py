@@ -13,8 +13,8 @@ def get_prompt():
         prompt = json.load(f)
 
     prompt["6"]["inputs"]["text"] = (
-        f"Mesmerizing oil painting of a person, "
-        # f"Mesmerizing oil painting of Santa Claus, "
+        # f"Mesmerizing oil painting of a person, "
+        f"Mesmerizing oil painting of Santa Claus, "
         f"by (({sample_artist()})), "
         f"by ({sample_artist()}), "
         f"by ((({sample_artist()})))"
