@@ -159,11 +159,15 @@ def process_image():
     # Convert base64 to PIL Image
     image_data = image_data.split(",")[1]  # Remove the "data:image/png;base64," part
     image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+    width, height = image.size
+    print(f"IN IMG: {width, height = }")
 
     # Process the image here (this example simply returns the received image)
     frame = pillow_to_opencv(image)
     open_cv_image = run_async(swag_it, frame)
     pil_img = opencv_to_pillow(open_cv_image)
+    width, height = pil_img.size
+    print(f"OUT IMG: {width, height = }")
 
     # Convert PIL Image back to base64
     buffered = io.BytesIO()

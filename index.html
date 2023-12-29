@@ -3,21 +3,87 @@
 
 <head>
 	<title>Webcam Image Processor</title>
+	<style>
+		body,
+		html {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			display: flex;
+			flex-direction: row;
+			overflow: hidden;
+			/* Prevents scrollbars */
+		}
+
+		#leftPanel {
+			width: 20%;
+			/* Adjust webcam and sent image width here */
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			/* Align to top */
+			padding: 10px;
+			box-sizing: border-box;
+		}
+
+		#rightPanel {
+			width: 80%;
+			/* Adjust processed image width here */
+			height: 100vh;
+			/* Full viewport height */
+			display: flex;
+			justify-content: center;
+			align-items: flex-start;
+			/* Align to top */
+			padding: 10px;
+			box-sizing: border-box;
+			overflow: hidden;
+			/* Prevents scrollbars */
+		}
+
+		#webcam,
+		#lastCaptured {
+			width: 100%;
+			/* Adjust to set the actual size of webcam and sent image */
+			margin-bottom: 10px;
+			box-sizing: border-box;
+		}
+
+		#result {
+			width: auto;
+			/* Maintain aspect ratio */
+			max-width: 100%;
+			/* Limit width to the container */
+			max-height: 100vh;
+			/* Limit height to the viewport */
+			box-sizing: border-box;
+		}
+
+		#canvas {
+			display: none;
+		}
+	</style>
 </head>
 
 <body>
-	<video id="webcam" autoplay></video>
-	<img id="result" style="display: none; width: 100%;">
-	<canvas id="canvas" style="display: none;"></canvas>
+	<div id="leftPanel">
+		<video id="webcam" autoplay></video>
+		<img id="lastCaptured" style="display: none;">
+	</div>
+	<div id="rightPanel">
+		<img id="result" style="display: none;">
+	</div>
+	<canvas id="canvas"></canvas>
 
 	<script>
 		const video = document.getElementById('webcam');
 		const canvas = document.getElementById('canvas');
 		const resultImage = document.getElementById('result');
+		const lastCapturedImage = document.getElementById('lastCaptured');
 
 		// Backend server configuration
 		const serverIP = '78.202.206.149'; // Replace with your server's IP
-		const serverPort = '1111';        // Replace with your server's Port
+		const serverPort = '1111';         // Replace with your server's Port
 		const serverEndpoint = `http://${serverIP}:${serverPort}/process`;
 
 		// Access the webcam
@@ -36,6 +102,10 @@
 			canvas.height = video.videoHeight;
 			context.drawImage(video, 0, 0);
 			const imageData = canvas.toDataURL('image/png');
+
+			// Update the last captured image
+			lastCapturedImage.src = imageData;
+			lastCapturedImage.style.display = 'block';
 
 			fetch(serverEndpoint, {
 				method: 'POST',

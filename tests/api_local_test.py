@@ -64,7 +64,7 @@ def convert_frame_to_base64(frame):
 if __name__ == "__main__":
     
 	# URL of the Flask server
-	url = 'http://localhost:5000/process'  # Change the URL if needed
+	url = 'http://localhost:1111/process'  # Change the URL if needed
      
 	encoded_string = convert_frame_to_base64(get_webcam_img())
 	# Prepare the JSON payload
