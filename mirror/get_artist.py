@@ -48,5 +48,15 @@ artists = [
     "Walter Crane",
 ]
 
+
 def sample_artist():
-	return random.choice(artists)
+    return random.choice(artists)
+
+
+def sample_sentence():
+    sentences = [
+        "Mesmerizing oil painting of a person, ",
+        "Mesmerizing oil painting of Santa Claus, ",
+        "Mesmerizing oil painting of woman and flowers, ",
+    ]
+    return random.choice(sentences)

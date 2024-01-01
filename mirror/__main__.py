@@ -6,7 +6,7 @@ import fire
 import time
 import asyncio
 from mirror import config
-from mirror.prompt import get_prompt, add_image_to_prompt
+from mirror.prompt import get_prompt, add_image_to_prompt, add_depth_to_prompt
 from mirror.websocket import (
     get_images,
     get_frame_from_ws_block,
@@ -95,25 +95,37 @@ async def do():
 
 from threading import Thread
 import queue
+from src_depth.model import get_model
+from src_depth.preprocess import make_depth_transform, render_depth
+from src_depth.inference import infer_depth
 
 
 async def swag_it(frame):
+    transform = make_depth_transform()
+    model = get_model()
+
     async with websockets.connect(
         config.uri, max_size=10 * 1024 * 1024
     ) as websocket:  # 10 MB limit
+        a = time.time()
         prompt = get_prompt()
         prompt = add_image_to_prompt(prompt, frame)
+        b = time.time() ; print(f"Time for prompt init is {b - a}") ; a = b
+
+        pil_image = opencv_to_pillow(frame)
+        result = infer_depth(model, transform, pil_image)
+        frame = pillow_to_opencv(result)
+        prompt = add_depth_to_prompt(prompt, frame)
+        b = time.time() ; print(f"Time for depth is {b - a}") ; a = b
+
         prompt_id = queue_prompt(prompt)["prompt_id"]
-        print("Let's get result")
-        # stylized_frame = get_frame_from_ws_block(ws, prompt)
-        # Process image from WebSocket
-        # image = asyncio.run(process_image_from_websocket(ws))
+        b = time.time() ; print(f"Time for sent is {b - a}") ; a = b
 
         image = None
         while image is None:
             image = await get_image_from_websocket(websocket)
-            print(f"{image = }")
-        print("We got something !")
+        b = time.time() ; print(f"Time for comfyui is {b - a}") ; a = b
+
         if image:
             pil_image_rgb = image.convert("RGB")
             # Convert to NumPy array
@@ -121,6 +133,7 @@ async def swag_it(frame):
             # Convert from RGB to BGR (OpenCV format)
             open_cv_image = cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR)
             print("We got it !")
+            b = time.time() ; print(f"Time for post-process is {b - a}") ; a = b
             return open_cv_image
 
 

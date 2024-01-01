@@ -17,6 +17,7 @@
 
 		#leftPanel {
 			width: 20%;
+			height: 100vh;
 			/* Adjust webcam and sent image width here */
 			display: flex;
 			flex-direction: column;
@@ -24,6 +25,18 @@
 			/* Align to top */
 			padding: 10px;
 			box-sizing: border-box;
+		}
+
+		#smallDuo {
+			width: 100%;
+			/* height: 33%; */
+			/* Adjust webcam and sent image width here */
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+			/* Align to top */
+			/* padding: 10px; */
+			/* box-sizing: border-box; */
 		}
 
 		#rightPanel {
@@ -43,16 +56,30 @@
 
 		#webcam,
 		#lastCaptured {
-			width: 100%;
+			width: 50%;
+			/* height: 50%; */
 			/* Adjust to set the actual size of webcam and sent image */
 			margin-bottom: 10px;
 			box-sizing: border-box;
+			aspect-ratio: 640/480;
+			/* max-width: 100%;  */
+			/* max-height: 22vh; */
+		}
+		#previousCaptured {
+			width: 100%;
+			/* height: 100%; */
+			/* Adjust to set the actual size of webcam and sent image */
+			margin-bottom: 10px;
+			box-sizing: border-box;
+			aspect-ratio: 640/480;
+			/* max-width: 100%;  */
+			/* max-height: 22vh; */
 		}
 
 		#result {
 			width: auto;
 			/* Maintain aspect ratio */
-			max-width: 100%;
+			/* max-width: 200%; */
 			/* Limit width to the container */
 			max-height: 100vh;
 			/* Limit height to the viewport */
@@ -65,14 +92,16 @@
 	</style>
 </head>
 
-<body>
+<body style="background-color:black;">
 	<div id="leftPanel">
-		<video id="webcam" autoplay></video>
-		<img id="lastCaptured" style="max-width: 100%; max-height: 22vh; display: none;">
-		<img id="previousCaptured" style="max-width: 100%; max-height: 22vh; display: none;">
+		<div id="smallDuo">
+			<video id="webcam" autoplay></video>
+			<img id="lastCaptured" style="display: none;">
+		</div>
+		<img id="previousCaptured" style="display: none;">
 	</div>
 	<div id="rightPanel">
-		<img id="result" style="max-height: 90vh; display: none;">
+		<img id="result" style="max-height: 100vh; display: none;">
 	</div>
 	<canvas id="canvas" style="display: none;"></canvas>
 
