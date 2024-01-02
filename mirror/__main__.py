@@ -101,30 +101,35 @@ from src_depth.inference import infer_depth
 
 
 async def swag_it(frame):
-    transform = make_depth_transform()
-    model = get_model()
-
     async with websockets.connect(
         config.uri, max_size=10 * 1024 * 1024
     ) as websocket:  # 10 MB limit
         a = time.time()
         prompt = get_prompt()
         prompt = add_image_to_prompt(prompt, frame)
-        b = time.time() ; print(f"Time for prompt init is {b - a}") ; a = b
+        b = time.time()
+        print(f"Time for prompt init is {b - a}")
+        a = b
 
         pil_image = opencv_to_pillow(frame)
         result = infer_depth(model, transform, pil_image)
         frame = pillow_to_opencv(result)
         prompt = add_depth_to_prompt(prompt, frame)
-        b = time.time() ; print(f"Time for depth is {b - a}") ; a = b
+        b = time.time()
+        print(f"Time for depth is {b - a}")
+        a = b
 
         prompt_id = queue_prompt(prompt)["prompt_id"]
-        b = time.time() ; print(f"Time for sent is {b - a}") ; a = b
+        b = time.time()
+        print(f"Time for sent is {b - a}")
+        a = b
 
         image = None
         while image is None:
             image = await get_image_from_websocket(websocket)
-        b = time.time() ; print(f"Time for comfyui is {b - a}") ; a = b
+        b = time.time()
+        print(f"Time for comfyui is {b - a}")
+        a = b
 
         if image:
             pil_image_rgb = image.convert("RGB")
@@ -133,7 +138,9 @@ async def swag_it(frame):
             # Convert from RGB to BGR (OpenCV format)
             open_cv_image = cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR)
             print("We got it !")
-            b = time.time() ; print(f"Time for post-process is {b - a}") ; a = b
+            b = time.time()
+            print(f"Time for post-process is {b - a}")
+            a = b
             return open_cv_image
 
 
@@ -164,7 +171,16 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 from datetime import datetime
 from pathlib import Path
+from src_sdxl.get_pipe import get_pipe
 
+NO_COMFY_UI = True
+NO_COMFY_UI = False
+
+if NO_COMFY_UI:
+    my_pipe = get_pipe()
+else:
+    transform = make_depth_transform()
+    model = get_model()
 
 @app.route("/process", methods=["POST"])
 def process_image():
@@ -176,7 +192,7 @@ def process_image():
     image = Image.open(io.BytesIO(base64.b64decode(image_data)))
 
     str_date = datetime.today().strftime("%Y-%m-%d")
-    str_datetime = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+    str_datetime = datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
     img_path_in = Path(f"./output/webcam/{str_date}/{str_datetime}_in.png")
     img_path_out = Path(f"./output/webcam/{str_date}/{str_datetime}_out.png")
     img_path_in.parent.mkdir(parents=True, exist_ok=True)
@@ -185,10 +201,15 @@ def process_image():
     width, height = image.size
     print(f"IN IMG: {width, height = }")
 
-    # Process the image here (this example simply returns the received image)
-    frame = pillow_to_opencv(image)
-    open_cv_image = run_async(swag_it, frame)
-    pil_img = opencv_to_pillow(open_cv_image)
+    b = time.time()
+    if NO_COMFY_UI:
+        pil_img = my_pipe(image)
+    else:
+        # Process the image here (this example simply returns the received image)
+        frame = pillow_to_opencv(image)
+        open_cv_image = run_async(swag_it, frame)
+        pil_img = opencv_to_pillow(open_cv_image)
+    print(f"Time for inference is {time.time() - b}")
     width, height = pil_img.size
     print(f"OUT IMG: {width, height = }")
 
@@ -203,7 +224,11 @@ def process_image():
 
 def launch(backend=False):
     if backend:
-        app.run(debug=True, host="0.0.0.0", port=1111)
+        app.run(
+            # debug=True,
+            host="0.0.0.0",
+            port=1111,
+        )
     else:
         asyncio.run(do())
 

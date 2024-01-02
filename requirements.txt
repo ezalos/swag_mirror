@@ -5,3 +5,13 @@ fire
 pillow
 # https://github.com/facebookresearch/dinov2 [extras]  --extra-index-url https://download.pytorch.org/whl/cu117  --extra-index-url https://pypi.nvidia.com
 flask-cors
+
+# hf
+diffusers
+invisible_watermark 
+transformers 
+accelerate 
+safetensors
+controlnet_aux
+mediapipe
+peft

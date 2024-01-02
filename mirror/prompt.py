@@ -10,7 +10,8 @@ from mirror.webcam import get_webcam_img, convert_frame_to_base64
 
 def get_prompt():
     # with open("pipelines/ws-lcm.json") as f:
-    with open("pipelines/ws-lcm-fast.json") as f:
+    # with open("pipelines/ws-lcm-fast.json") as f:
+    with open("pipelines/ws-lcm-fast-depth_OP.json") as f:
         prompt = json.load(f)
 
     prompt["6"]["inputs"]["text"] = (
@@ -26,6 +27,7 @@ def get_prompt():
 def add_image_to_prompt(prompt, frame):
     prompt["122"]["inputs"]["image"] = convert_frame_to_base64(frame)
     return prompt
+
 
 def add_depth_to_prompt(prompt, frame):
     prompt["137"]["inputs"]["image"] = convert_frame_to_base64(frame)

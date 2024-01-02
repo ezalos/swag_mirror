@@ -15,90 +15,74 @@
 			/* Prevents scrollbars */
 		}
 
-		
-		#overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 50%;
-		height: 100%;
-		background-color: white;
-		display: none;
-		}
-
-
 		#leftPanel {
-			width: 35%;
-			height: 100vh;
-			max-height: 100vh;
-			/* Adjust webcam and sent image width here */
+			flex: 0 0 35%;
+			/* The left panel will take up 35% of the width and not grow or shrink */
 			display: flex;
+			justify-content: center;
 			flex-direction: column;
-			justify-content: space-between;
-			/* Align to top */
 			padding: 10px;
 			box-sizing: border-box;
+			max-height: 95vh;
 		}
 
 		#smallDuo {
-	        position: relative;
-			width: 100%;
-			/* Adjust webcam and sent image width here */
+			position: relative;
 			display: flex;
 			flex-direction: row;
-			justify-content: flex-start;
-			/* Align to top */
-			/* padding: 10px; */
-			/* box-sizing: border-box; */
+			/* Stack the webcam and the last captured image vertically */
+			align-items: center;
+			/* Center align the items */
+			height: 30%;
+			/* Half of the left panel's height */
 		}
 
 		#rightPanel {
-			width: 65%;
-			/* Adjust processed image width here */
-			height: 100vh;
-			/* Full viewport height */
+			flex-grow: 1;
+			/* Allow the right panel to grow and fill the remaining space */
 			display: flex;
-			justify-content: right;
-			/* align-items: flex-start; */
-			/* Align to top */
+			justify-content: center;
+			/* align-items: center; */
 			padding: 10px;
-			/* box-sizing: border-box; */
 			overflow: hidden;
-			/* Prevents scrollbars */
 		}
 
 		#webcam,
-		#lastCaptured {
+		#lastCaptured{
 			width: 50%;
-			/* Adjust to set the actual size of webcam and sent image */
-			margin-bottom: 10px;
-			/* box-sizing: border-box; */
-			/* aspect-ratio: 640/480; */
-			/* max-width: 100%;  */
-			/* max-height: 22vh; */
+			/* Take the full width of their container */
+			object-fit: contain;
+			/* Maintain aspect ratio without cropping */
 		}
 
 		#previousCaptured {
-			width: 100%;
-			/* height: 100%; */
-			/* Adjust to set the actual size of webcam and sent image */
-			margin-bottom: 10px;
-			/* box-sizing: border-box; */
-			/* aspect-ratio: 640/480; */
-			/* max-width: 100%;  */
-			/* max-height: 22vh; */
+			height: 50%;
+			/* Take the full width of their container */
+			object-fit: contain;
+			/* Maintain aspect ratio without cropping */
+		}
+
+		#logo {
+			height: 15%;
+			/* Take the full width of their container */
+			object-fit: contain;
+			/* Maintain aspect ratio without cropping */
 		}
 
 		#result {
-			max-width: 200%;
-			width: auto;
-			/* max-height:100%; */
-			max-height: 100vh;
-			/* Maintain aspect ratio */
-			/* max-width: 200%; */
-			/* Limit width to the container */
-			/* Limit height to the viewport */
-			/* box-sizing: border-box; */
+			max-width: 100%;
+			max-height: 95vh;
+			/* Adjust the height to be a bit less than the full viewport height */
+			object-fit: contain;
+			/* Maintain aspect ratio without cropping */
+		}
+
+		#overlay {
+			position: absolute;
+			width: 50%;
+			height: 100%;
+			background-color: white;
+			display: none;
 		}
 
 		#canvas {
@@ -115,7 +99,7 @@
 			<img id="lastCaptured" style="display: none;">
 		</div>
 		<img id="previousCaptured" style="display: none;">
-		<img style="display: block;" src="https://github.com/ezalos/swag_mirror/blob/main/lusel_velidoe.png?raw=true">
+		<img id="logo" src="https://github.com/ezalos/swag_mirror/blob/main/lusel_velidoe.png?raw=true">
 	</div>
 	<div id="rightPanel">
 		<img id="result" style="max-height: 100vh; display: none;">
@@ -184,19 +168,19 @@
 			});
 		}
 
-		    function blink(callback) {
-					let blinkCount = 0;
-					overlay.style.display = 'block'; // Show the overlay
-					const blinkInterval = setInterval(() => {
-						overlay.style.opacity = blinkCount % 5 === 0 ? '1' : '0';
-						blinkCount++;
-						if (blinkCount === 15) {
-							clearInterval(blinkInterval);
-							overlay.style.display = 'none'; // Ensure it's hidden after blinking
-							callback(); // Proceed to capture and send the image
-						}
-					}, 75); // Blink every 333ms, 3 times
+		function blink(callback) {
+			let blinkCount = 0;
+			overlay.style.display = 'block'; // Show the overlay
+			const blinkInterval = setInterval(() => {
+				overlay.style.opacity = blinkCount % 5 === 0 ? '1' : '0';
+				blinkCount++;
+				if (blinkCount === 15) {
+					clearInterval(blinkInterval);
+					overlay.style.display = 'none'; // Ensure it's hidden after blinking
+					callback(); // Proceed to capture and send the image
 				}
+			}, 75);
+		}
 	</script>
 </body>
 
