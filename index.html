@@ -17,18 +17,18 @@
 			margin: auto;
 			display: flex;
 			flex-direction: column;
+			justify-content: center;
 		}
 
 		#panels {
 			height: 90%;
-  display: flex;
+			display: flex;
 		}
 
 		#leftPanel {
 			display: flex;
 			justify-content: center;
 			flex-direction: column;
-			padding: 40px 20px 20px;
 			flex: 2;
 		}
 
@@ -45,17 +45,21 @@
 			display: flex;
 			flex-direction: row;
 			justify-content: space-around;
+			align-items: center;
+			height: 30%
 		}
 
 		#webcamContainer,
 		#lastCapturedContainer {
+			height: 100%;
 			position: relative;
-			margin: 5px;
+			padding: 5px;
 			flex: 1;
 		}
 
 		#webcam,
-		#lastCaptured {
+		#lastCaptured,
+		#previousCaptured {
 			height: 100%;
 			width: 100%;
 			object-fit: cover;
@@ -72,13 +76,10 @@
 		}
 
 		#previousCapturedContainer {
-			height: 45%;
-		}
-
-		#previousCaptured {
-			height: 100%;
-			width: 100%;
-			object-fit: contain;
+			height: 60%;
+			padding: 5px;
+			display: flex;
+			align-items: center;
 		}
 
 		#logoContainer {
@@ -94,6 +95,8 @@
 		#resultContainer {
 			margin: auto;
 			padding: 0 20px;
+			width: 100%;
+			height: 100%;
 		}
 
 		#result {
@@ -121,6 +124,46 @@
 		#canvas {
 			display: none;
 		}
+
+		#triangleDownContainer {
+			flex: 1;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#separator {
+			display: flex;
+		}
+
+		#triangle-right {
+			width: 0;
+			height: 0;
+			border-top: 10px solid transparent;
+			border-left: 20px solid white;
+			border-bottom: 10px solid transparent;
+			margin: 10px;
+		}
+
+		#triangle-down {
+			width: 0;
+			height: 0;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-top: 20px solid white;
+			margin: 10px;
+		}
+
+		#placeHolder {
+			flex: 1;
+			opacity: 0;
+		}
+
+		#middleArrow {
+			justify-content: center;
+			align-items: center;
+			display: flex;
+		}
 	</style>
 </head>
 
@@ -134,22 +177,32 @@
 						<video id="webcam" autoplay></video>
 						<button id="fullscreenBtn"></button>
 					</div>
+					<div id="triangle-right"></div>
 					<div id="lastCapturedContainer">
-						<img id="lastCaptured"">
+						<img id="lastCaptured">
+					</div>
+				</div>
+				<div id="separator">
+					<div id="placeHolder"></div>
+					<div id="triangleDownContainer">
+						<div id="triangle-down"></div>
 					</div>
 				</div>
 				<div id="previousCapturedContainer">
-					<img id="previousCaptured"">
+					<img id="previousCaptured">
 				</div>
+				<div id="logoContainer">
+					<img id="logo" src="https://github.com/ezalos/swag_mirror/blob/main/lusel_velidoe.png?raw=true">
+				</div>
+			</div>
+			<div id="middleArrow">
+				<div id="triangle-right"></div>
 			</div>
 			<div id="rightPanel">
 				<div id="resultContainer">
 					<img id="result">
 				</div>
-			</div>	
-		</div>
-		<div id="logoContainer">
-			<img id="logo" src="https://github.com/ezalos/swag_mirror/blob/main/lusel_velidoe.png?raw=true">
+			</div>
 		</div>
 	</div>
 	<canvas id="canvas"></canvas>
