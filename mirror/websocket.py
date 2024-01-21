@@ -97,7 +97,6 @@ import websockets
 async def get_image_from_websocket(websocket):
     # Wait for a binary message (image data)
     msg = await websocket.recv()
-    # print(f"{msg = }")
 
     # Check if the message is binary
     if isinstance(msg, bytes):
@@ -115,4 +114,6 @@ async def get_image_from_websocket(websocket):
                 image = Image.open(io.BytesIO(image_bytes))
                 # print(f"{image = }")
                 return image
-    return None
+    else:
+        # print(f"{msg = }")
+        return None

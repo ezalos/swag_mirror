@@ -17,6 +17,7 @@ pipe = AutoPipelineForImage2Image.from_pretrained(
 
 # pipe = DiffusionPipeline.from_pretrained(model_id, variant="fp16")
 
+lcm_lora_id = "latent-consistency/lcm-lora-sdxl"
 pipe.load_lora_weights(lcm_lora_id)
 pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
 # pipe.load_lora_weights()
@@ -29,11 +30,11 @@ negative_prompt = "text, watermark, frames, border, ugly, tiling, poorly drawn h
 image = load_image("/home/ezalos/42/art/comfyui/swag_mirror/2023-12-31 22:33:11_in.png")
 images = pipe(
     prompt=prompt,
-	negative_prompt=negative_prompt,
-	num_inference_steps=6, 
-	guidance_scale=1.6, 
-	strength=0.8, 
-	image=image
+    negative_prompt=negative_prompt,
+    num_inference_steps=6,
+    guidance_scale=1.6,
+    strength=0.8,
+    image=image,
 ).images[0]
 
 

@@ -1,4 +1,5 @@
 *.png
+*.pyc
 /venv
 __pycache__
 .envrc

@@ -6,7 +6,12 @@ import fire
 import time
 import asyncio
 from mirror import config
-from mirror.prompt import get_prompt, add_image_to_prompt, add_depth_to_prompt
+from mirror.prompt import (
+    get_prompt,
+    add_image_to_prompt,
+    add_depth_to_prompt,
+    add_open_pose_to_prompt,
+)
 from mirror.websocket import (
     get_images,
     get_frame_from_ws_block,
@@ -25,6 +30,8 @@ from PIL import Image
 import io
 
 import websockets
+
+from controlnet_aux import OpenposeDetector
 
 
 async def do():
@@ -99,6 +106,8 @@ from src_depth.model import get_model
 from src_depth.preprocess import make_depth_transform, render_depth
 from src_depth.inference import infer_depth
 
+openpose = OpenposeDetector.from_pretrained("lllyasviel/ControlNet")
+
 
 async def swag_it(frame):
     async with websockets.connect(
@@ -112,11 +121,18 @@ async def swag_it(frame):
         a = b
 
         pil_image = opencv_to_pillow(frame)
-        result = infer_depth(model, transform, pil_image)
-        frame = pillow_to_opencv(result)
-        prompt = add_depth_to_prompt(prompt, frame)
+        img_depth = infer_depth(model, transform, pil_image)
+        frame_depth = pillow_to_opencv(img_depth)
+        prompt = add_depth_to_prompt(prompt, frame_depth)
         b = time.time()
         print(f"Time for depth is {b - a}")
+        a = b
+
+        img_open_pose = openpose(pil_image)
+        frame_open_pose = pillow_to_opencv(img_open_pose)
+        prompt = add_open_pose_to_prompt(prompt, frame_open_pose)
+        b = time.time()
+        print(f"Time for open pose is {b - a}")
         a = b
 
         prompt_id = queue_prompt(prompt)["prompt_id"]
@@ -124,24 +140,20 @@ async def swag_it(frame):
         print(f"Time for sent is {b - a}")
         a = b
 
-        image = None
-        while image is None:
-            image = await get_image_from_websocket(websocket)
+        img_style = None
+        while img_style is None:
+            img_style = await get_image_from_websocket(websocket)
         b = time.time()
-        print(f"Time for comfyui is {b - a}")
+        print(f"Time for diffusion is {b - a}")
         a = b
 
-        if image:
-            pil_image_rgb = image.convert("RGB")
-            # Convert to NumPy array
-            numpy_image = np.array(pil_image_rgb)
-            # Convert from RGB to BGR (OpenCV format)
-            open_cv_image = cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR)
-            print("We got it !")
-            b = time.time()
-            print(f"Time for post-process is {b - a}")
-            a = b
-            return open_cv_image
+        frame_open_pose = pillow_to_opencv(img_open_pose)
+        frame_style = pillow_to_opencv(img_style)
+        b = time.time()
+        print(f"Time for post-process is {b - a}")
+        a = b
+
+        return [frame_style, frame_open_pose, frame_depth]
 
 
 def run_async(func, *args):
@@ -182,6 +194,15 @@ else:
     transform = make_depth_transform()
     model = get_model()
 
+
+def pillow_to_str(pil_img):
+    # Convert PIL Image back to base64
+    buffered = io.BytesIO()
+    pil_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
+
+
 @app.route("/process", methods=["POST"])
 def process_image():
     data = request.json
@@ -200,6 +221,8 @@ def process_image():
 
     width, height = image.size
     print(f"IN IMG: {width, height = }")
+    image = image.resize((1024, 1024))
+    image.save(img_path_in.parent.joinpath(f"{img_path_in.stem}_resized.png"))
 
     b = time.time()
     if NO_COMFY_UI:
@@ -207,19 +230,29 @@ def process_image():
     else:
         # Process the image here (this example simply returns the received image)
         frame = pillow_to_opencv(image)
-        open_cv_image = run_async(swag_it, frame)
-        pil_img = opencv_to_pillow(open_cv_image)
+        # open_cv_image = run_async(swag_it, frame)
+        out_frames = run_async(swag_it, frame)
+        frame_style, frame_open_pose, frame_depth = out_frames
+
     print(f"Time for inference is {time.time() - b}")
-    width, height = pil_img.size
+    pil_style = opencv_to_pillow(frame_style)
+    pil_style.save(img_path_out)
+    img_str_style = pillow_to_str(pil_style)
+
+    pil_open_pose = opencv_to_pillow(frame_open_pose)
+    img_str_open_pose = pillow_to_str(pil_open_pose)
+
+    pil_depth = opencv_to_pillow(frame_depth)
+    img_str_depth = pillow_to_str(pil_depth)
+
+    width, height = pil_style.size
     print(f"OUT IMG: {width, height = }")
 
-    # Convert PIL Image back to base64
-    buffered = io.BytesIO()
-    pil_img.save(buffered, format="PNG")
-    pil_img.save(img_path_out)
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-
-    return jsonify(image=f"data:image/png;base64,{img_str}")
+    return jsonify(
+        image=f"data:image/png;base64,{img_str_style}",
+        depth=f"data:image/png;base64,{img_str_depth}",
+        open_pose=f"data:image/png;base64,{img_str_open_pose}",
+    )
 
 
 def launch(backend=False):
