@@ -62,7 +62,7 @@
 		#previousCaptured {
 			height: 100%;
 			width: 100%;
-			object-fit: cover;
+			object-fit: contain;
 		}
 
 		#fullscreenButton {
@@ -233,9 +233,18 @@
 		function captureAndSendImage() {
 			blink(() => {
 				const context = canvas.getContext('2d');
-				canvas.width = video.videoWidth;
-				canvas.height = video.videoHeight;
-				context.drawImage(video, 0, 0);
+				// Assuming the video feed is always 640x480, we calculate the crop dimensions
+				const cropSize = 480;
+				const offsetX = (video.videoWidth - cropSize) / 2;
+				const offsetY = (video.videoHeight - cropSize) / 2;
+
+				// Set canvas size to the crop size
+				canvas.width = cropSize;
+				canvas.height = cropSize;
+
+				// Draw the cropped image onto the canvas
+				context.drawImage(video, offsetX, offsetY, cropSize, cropSize, 0, 0, cropSize, cropSize);
+
 				const imageData = canvas.toDataURL('image/png');
 				if (lastImageDataUrl) {
 					previousCapturedImage.src = lastImageDataUrl;
