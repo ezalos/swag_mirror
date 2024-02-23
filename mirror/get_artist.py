@@ -53,26 +53,40 @@ def sample_artist():
     return random.choice(artists)
 
 
+# def sample_sentence():
+#     sex = random.choice(["woman", "man"])
+#     sentences = [
+#         # "Santa Claus",
+#         f"a {sex}",
+#         # f"a {sex} dancer",
+#         # f"a {sex} hacker",
+#         # f"a {sex} hiker",
+#         # f"a {sex} child",
+#         # f"a {sex} magician",
+#         # f"a {sex} elf",
+#         # f"a {sex} student",
+#     ]
+#     background = random.choice(
+#         [
+#             "flowers",
+#             "a forest",
+#             "a beach",
+#             "a bridge",
+#             "a cloudy sky",
+#         ]
+#     )
+#     return f"Mesmerizing oil painting of {random.choice(sentences)} in front of {background}, "
+
 def sample_sentence():
     sex = random.choice(["woman", "man"])
     sentences = [
-        # "Santa Claus",
-        f"a {sex}",
-        # f"a {sex} dancer",
-        # f"a {sex} hacker",
-        # f"a {sex} hiker",
-        # f"a {sex} child",
-        # f"a {sex} magician",
-        # f"a {sex} elf",
-        # f"a {sex} student",
+        f"a {sex} with a tropical outfit",
     ]
     background = random.choice(
         [
-            "flowers",
-            "a forest",
-            "a beach",
-            "a bridge",
-            "a cloudy sky",
+            "a tropical forest",
+            "a tropical beach",
+            "a tropical environment",
         ]
     )
     return f"Mesmerizing oil painting of {random.choice(sentences)} in front of {background}, "
