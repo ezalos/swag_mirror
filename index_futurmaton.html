@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Webcam Image Processor</title>
+	<style>
+		body {
+			padding: unset;
+			margin: unset;
+			background-color: black;
+		}
+
+		#mainContainer {
+			padding: 20px 0px;
+			height: 95vh;
+			width: 95vw;
+			margin: auto;
+			display: flex;
+		}
+
+		#leftPanel {
+			display: flex;
+			justify-content: center;
+			flex-direction: column;
+			max-width: calc(85vh / 1.5);
+		}
+
+		#middleArrow {
+			justify-content: center;
+			align-items: center;
+			display: flex;
+			flex: 0.25;
+		}
+
+		#rightPanel {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex: 2;
+		}
+
+		#smallDuo {
+			position: relative;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-around;
+			align-items: center;
+			height: 25%
+		}
+
+		#webcamContainer,
+		#lastCapturedContainer {
+			height: 100%;
+			position: relative;
+			flex: 1;
+			display: flex;
+			justify-content: center;
+		}
+
+		#previousCapturedContainer {
+			height: 60%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#webcam,
+		#lastCaptured,
+		#previousCaptured {
+			height: 100%;
+			object-fit: cover;
+			aspect-ratio: 1/1;
+		}
+
+		#fullscreenButton {
+			width: 50%;
+			height: 100%;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			opacity: 0;
+
+		}
+
+		#logoContainer {
+			height: 10%;
+		}
+
+		#logo {
+			height: 100%;
+			width: 100%;
+			object-fit: contain;
+		}
+
+		#resultContainer {
+			margin: auto;
+			height: 100%;
+		}
+
+		#result {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			object-position: right top;
+			aspect-ratio: 1/1;
+		}
+
+		#overlay {
+			position: absolute;
+			height: 100%;
+			background-color: white;
+			aspect-ratio: 1/1;
+		}
+
+		#fullscreenBtn {
+			height: 100%;
+			position: absolute;
+			opacity: 0;
+			aspect-ratio: 1/1;
+		}
+
+		#canvas {
+			display: none;
+		}
+
+		#triangleDownContainer {
+			flex: 1;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#separator {
+			display: flex;
+			height: 5%;
+		}
+
+		#triangle-right {
+			width: 0;
+			height: 0;
+			border-top: 10px solid transparent;
+			border-left: 20px solid white;
+			border-bottom: 10px solid transparent;
+			margin: 10px;
+		}
+
+		#triangle-down {
+			width: 0;
+			height: 0;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-top: 20px solid white;
+			margin: 10px;
+		}
+
+		#equal-sign {
+			position: relative;
+			width: 50px;
+			/* Width of the "=" sign */
+			height: 15px;
+			/* Height between the top and bottom lines */
+			background: transparent;
+			margin: 10px;
+		}
+
+		#equal-sign:before,
+		#equal-sign:after {
+			content: '';
+			position: absolute;
+			left: 0;
+			width: 100%;
+			/* Full width of the "=" sign */
+			height: 3px;
+			/* Thickness of the lines */
+			background: #FF96DC;
+		}
+
+		#equal-sign:before {
+			top: 0;
+		}
+
+		#equal-sign:after {
+			bottom: 0;
+		}
+
+
+		#placeHolder {
+			flex: 1;
+			opacity: 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="mainContainer">
+		<div id="leftPanel">
+			<div id="smallDuo">
+				<div id="webcamContainer">
+					<div id="overlay"></div> <!-- Overlay for blinking effect -->
+					<video id="webcam" autoplay></video>
+					<button id="fullscreenBtn"></button>
+				</div>
+				<div id="triangle-right"></div>
+				<div id="lastCapturedContainer">
+					<img id="lastCaptured">
+				</div>
+			</div>
+			<div id="separator">
+				<div id="placeHolder"></div>
+				<div id="triangleDownContainer">
+					<div id="triangle-down"></div>
+				</div>
+			</div>
+			<div id="previousCapturedContainer">
+				<img id="previousCaptured">
+			</div>
+			<div id="logoContainer">
+				<img id="logo" src="/home/ezalos/42/art/comfyui/swag_mirror/futurmaton.png">
+			</div>
+		</div>
+		<div id="middleArrow">
+			<div id="equal-sign"></div>
+		</div>
+		<div id="rightPanel">
+			<div id="resultContainer">
+				<img id="result">
+			</div>
+		</div>
+	</div>
+	<canvas id="canvas"></canvas>
+
+	<script>
+		const video = document.getElementById('webcam');
+		const canvas = document.getElementById('canvas');
+		const resultImage = document.getElementById('result');
+		const lastCapturedImage = document.getElementById('lastCaptured');
+		const previousCapturedImage = document.getElementById('previousCaptured');
+		const overlay = document.getElementById('overlay');
+
+		const serverIP = '78.202.206.149';
+		const serverPort = '1111';
+		const serverEndpoint = `http://${serverIP}:${serverPort}/process`;
+
+		navigator.mediaDevices.getUserMedia({ video: true })
+			.then(stream => {
+				video.srcObject = stream;
+				captureAndSendImage(); // Start the cycle
+			})
+			.catch(err => {
+				console.error("Error accessing webcam", err);
+			});
+
+		function captureAndSendImage() {
+			blink(() => {
+				const context = canvas.getContext('2d');
+				const cropSize = video.videoWidth > video.videoHeight ? video.videoHeight : video.videoWidth;
+
+				const offsetX = (video.videoWidth - cropSize) / 2;
+				const offsetY = (video.videoHeight - cropSize) / 2;
+
+				canvas.width = cropSize;
+				canvas.height = cropSize;
+
+				context.drawImage(video, offsetX, offsetY, cropSize, cropSize, 0, 0, cropSize, cropSize);
+
+				const imageData = canvas.toDataURL('image/png');
+				lastCapturedImage.src = imageData;
+
+				fetch(serverEndpoint, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ image: imageData })
+				})
+					.then(response => {
+						if (!response.ok) {
+							throw new Error(`HTTP error! status: ${response.status}`);
+						}
+						return response.json();
+					})
+					.then(data => {
+						resultImage.src = data.image;
+						previousCapturedImage.src = lastCapturedImage.src;
+						setTimeout(captureAndSendImage, 500); // Restart the cycle
+					})
+					.catch(err => {
+						console.error('Error processing image:', err);
+						resultImage.src = '';
+						previousCapturedImage.src = lastCapturedImage.src;
+						setTimeout(captureAndSendImage, 500); // Retry after a delay if an error occurs
+					});
+			});
+		}
+
+		function blink(callback) {
+			let blinkCount = 0;
+			const blinkInterval = setInterval(() => {
+				overlay.style.opacity = blinkCount % 5 === 0 ? '1' : '0';
+				blinkCount++;
+				if (blinkCount === 15) {
+					clearInterval(blinkInterval);
+					callback(); // Proceed to capture and send the image
+				}
+			}, 75);
+		}
+
+		var elem = document.documentElement;
+		var isFullScreen = false;
+
+		document.getElementById("fullscreenBtn").addEventListener("click", function () {
+			if (isFullScreen === false) {
+				goFullScreen();
+				isFullScreen = true;
+			}
+			else {
+				exitFullScreen();
+				isFullScreen = false;
+			}
+		});
+
+		function exitFullScreen() {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) { /* Firefox */
+				document.mozCancelFullScreen();
+			} else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+				document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) { /* IE/Edge */
+				document.msExitFullscreen();
+			}
+		}
+
+		function goFullScreen() {
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen();
+			} else if (elem.mozRequestFullScreen) { /* Firefox */
+				elem.mozRequestFullScreen();
+			} else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+				elem.webkitRequestFullscreen();
+			} else if (elem.msRequestFullscreen) { /* IE/Edge */
+				elem.msRequestFullscreen();
+			}
+		}
+	</script>
+</body>
+
+</html>
