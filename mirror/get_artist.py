@@ -57,7 +57,8 @@ def sample_sentence():
     sex = random.choice(["woman", "man"])
     sentences = [
         # "Santa Claus",
-        f"a {sex}",
+        # f"a {sex}",
+        f"a {sex} with a tropical outfit",
         # f"a {sex} dancer",
         # f"a {sex} hacker",
         # f"a {sex} hiker",
@@ -68,11 +69,16 @@ def sample_sentence():
     ]
     background = random.choice(
         [
-            "flowers",
-            "a forest",
-            "a beach",
-            "a bridge",
-            "a cloudy sky",
+            # "flowers",
+            "a tropical forest",
+            "a tropical beach",
+            # "a bridge",
+            # "a cloudy sky",
+            # "flowers",
+            # "a forest",
+            # "a beach",
+            # "a bridge",
+            # "a cloudy sky",
         ]
     )
     return f"Mesmerizing oil painting of {random.choice(sentences)} in front of {background}, "
