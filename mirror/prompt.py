@@ -14,6 +14,7 @@ def get_prompt():
         f"by (({sample_artist()})), "
         f"by ({sample_artist()}), "
         f"by ((({sample_artist()})))"
+        # f"by (((Paul Gauguin)))"
     )
     return prompt
 
