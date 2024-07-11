@@ -74,6 +74,8 @@ def sample_sentence():
             "a cloudy sky",
         ]
     )
+
+    # return f"Mesmerizing oil painting of {random.choice(sentences)} playing (((((bowling)))))."
     return f"Mesmerizing oil painting of {random.choice(sentences)} in front of {background}, "
 
 # def sample_sentence():

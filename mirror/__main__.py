@@ -217,12 +217,12 @@ def process_image():
     img_path_in = Path(f"./output/webcam/{str_date}/{str_datetime}_in.png")
     img_path_out = Path(f"./output/webcam/{str_date}/{str_datetime}_out.png")
     img_path_in.parent.mkdir(parents=True, exist_ok=True)
-    image.save(img_path_in)
+    # image.save(img_path_in)
 
     width, height = image.size
     print(f"IN IMG: {width, height = }")
     image = image.resize((1024, 1024))
-    image.save(img_path_in.parent.joinpath(f"{img_path_in.stem}_resized.png"))
+    # image.save(img_path_in.parent.joinpath(f"{img_path_in.stem}_resized.png"))
 
     b = time.time()
     if NO_COMFY_UI:
@@ -236,7 +236,7 @@ def process_image():
 
     print(f"Time for inference is {time.time() - b}")
     pil_style = opencv_to_pillow(frame_style)
-    pil_style.save(img_path_out)
+    # pil_style.save(img_path_out)
     img_str_style = pillow_to_str(pil_style)
 
     pil_open_pose = opencv_to_pillow(frame_open_pose)
